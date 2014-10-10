@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os, sys, time
+import os.path
 import fileinput
 import re
 import logging
@@ -12,7 +13,7 @@ from Tkinter import *
 import threading
 
 POOL_INTERVAL_SECONDS = 60
-WATCH_FILENAME = "watch.txt"
+WATCH_FILENAME = "D:/watch.txt"
 
 
 class AlertDialog(Frame):
@@ -27,7 +28,9 @@ class AlertDialog(Frame):
     def _createWidgets(self):
         self.timeLabel = Label(self, text=self.due_time)
         self.timeLabel.pack()
-        self.todoLabel = Label(self, text=self.thing)
+        # tkinter 显示utf8.但是从windows cmd读进来的是gbk
+        utf8str = self.thing.decode('gbk').encode('utf8')
+        self.todoLabel = Label(self, text=utf8str)
         self.todoLabel.pack()
         #self.quitButton = Button(self, text='Quit', command=self.quit)
         #self.quitButton.pack()
@@ -38,7 +41,7 @@ class AlertDialog(Frame):
         self.delay1DayButton = Button(self, text='1day later', command=self.delay1day)
         self.delay1DayButton.pack()
 
-        self.delay1HourButton = Button(self, text='1day later', command=self.delay1hour)
+        self.delay1HourButton = Button(self, text='1hour later', command=self.delay1hour)
         self.delay1HourButton.pack()
 
         self.delay10MinuteButton = Button(self, text='10min later', command=self.delay10min)
@@ -168,6 +171,7 @@ class AlertManager(object):
 
 
 def check_watch_file():
+    #print os.path.abspath(WATCH_FILENAME) 
     alertManager = AlertManager()
     while True:
         with open(WATCH_FILENAME) as watch_file:

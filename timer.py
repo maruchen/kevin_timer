@@ -11,10 +11,10 @@ import math
 from input_parser import *
 
 
-WATCH_FILENAME = "watch.txt"
+WATCH_FILENAME = "D:/watch.txt"
 
 
-logging.basicConfig(filename='output.log', 
+logging.basicConfig(filename='D:/kevin_timer.log', 
                     filemode='a',
                     level=logging.DEBUG,
                     format='%(levelname)s %(asctime)s %(filename)s:%(lineno)d %(message)s')
@@ -25,6 +25,10 @@ logging.basicConfig(filename='output.log',
 if __name__ == "__main__":
     logging.debug("input:%s", ' '.join(sys.argv))
 
+    #print len(sys.argv)
+    #print ' '.join(sys.argv)
+    #print os.path.abspath('.') 
+    #time.sleep(1000)
     try:
         parser = InputParser()
         (absolute_timestamp, input_todo) = parser.parse_arguments(sys.argv)

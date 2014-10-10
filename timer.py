@@ -8,7 +8,7 @@ import logging
 import argparse
 import operator
 import math
-from input_handler import *
+from input_parser import *
 
 
 WATCH_FILENAME = "watch.txt"
@@ -26,7 +26,8 @@ if __name__ == "__main__":
     logging.debug("input:%s", ' '.join(sys.argv))
 
     try:
-        (absolute_timestamp, input_todo) = parse_arguments(sys.argv)
+        parser = InputParser()
+        (absolute_timestamp, input_todo) = parser.parse_arguments(sys.argv)
 
     except FormatError as e:
         logging.error("arguments must be in format: time something")

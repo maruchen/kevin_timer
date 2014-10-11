@@ -164,6 +164,8 @@ class AlertManager(object):
 
     def _showDialog(self, thing, due_time):
         root = Tk()
+        root.title = "提醒"
+        root.lift()
         app = AlertDialog(self, thing, due_time, master=root)
         #app.master.title('提醒')
         app.mainloop()

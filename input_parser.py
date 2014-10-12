@@ -123,26 +123,17 @@ class InputParser(object):
         """
         if len(sys.argv) <= 1:
             raise FormatError("参数太少") 
-        # 第一个参数为脚本名
+        # 第一个参数为脚本名，排除
         cmdline = ' '.join(argv[1:]) 
-        return self.parse_cmdline(cmdline)
+        return self.parse_textline(cmdline)
 
 
-    def parse_cmdline(self, cmdline):
+    def parse_textline(self, cmdline):
         """
         return (absolute_timestamp, thing)
         """
-        # decide time is first argument or first two arguments
-        match = re.search(r'(\d+-)?\d+-\d+ \d+:\d+(:\d+)?', cmdline)
-        if match:
-            absolute_timestamp = self._convert_2param_to_timestamp(argv[1], argv[2])
-            input_todo = ' '.join(argv[3:])
-        else:
-            absolute_timestamp = self._convert_1param_to_timestamp(argv[1])
-            input_todo = ' '.join(argv[2:])
-
-
-        pattern_parsers = []
+        relative_time_parser = RelativeTimePatternParser()
+        pattern_parsers = [relative_time_parser]
         for pattern_parser in pattern_parsers:
             if pattern_parser.match(cmdline):
                 return pattern_parser.parse(cmdline)
@@ -180,18 +171,17 @@ class RelativeTimePatternParser(PatternParser):
         match = re.search(r'\b(\d+)m?\b', cmdline)
         if match:
             input_num = match.group(1)
-            absolute_timestamp = current_timestamp + int(input_num) * 60
-            thing = remove match.group(0) from cmdline, and then remove space at begin/end
-            return (absolute_timestamp, thing)
+            due_timestamp = current_timestamp + int(input_num) * 60
+            thing = cmdline.replace(match.group(0), " ").strip()
+            return (due_timestamp, thing)
         # N days
-
-
-
-
-
-
-
-
+        current_timestamp = time.mktime(time.localtime())
+        match = re.search(r'\b(\d+)(d|day|days)\b', cmdline)
+        if match:
+            input_num = match.group(1)
+            due_timestamp = current_timestamp + int(input_num) * 60 * 60 * 24
+            thing = cmdline.replace(match.group(0), " ").strip()
+            return (due_timestamp, thing)
 
 
 

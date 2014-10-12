@@ -117,12 +117,23 @@ class InputParser(object):
         return absolute_timestamp
 
 
-    def parse_arguments(self, argv):
-        if len(argv) < 3:
-            raise FormatError("input_time error")
+    def parse_arguments(self):
+        """
+        return (absolute_timestamp, thing)
+        """
+        if len(sys.argv) <= 1:
+            raise FormatError("参数太少") 
+        # 第一个参数为脚本名
+        cmdline = ' '.join(argv[1:]) 
+        return self.parse_cmdline(cmdline)
 
+
+    def parse_cmdline(self, cmdline):
+        """
+        return (absolute_timestamp, thing)
+        """
         # decide time is first argument or first two arguments
-        match = re.match(r'(\d+-)?\d+-\d+ \d+:\d+(:\d+)?', argv[1] + " " + argv[2])
+        match = re.search(r'(\d+-)?\d+-\d+ \d+:\d+(:\d+)?', cmdline)
         if match:
             absolute_timestamp = self._convert_2param_to_timestamp(argv[1], argv[2])
             input_todo = ' '.join(argv[3:])
@@ -130,7 +141,56 @@ class InputParser(object):
             absolute_timestamp = self._convert_1param_to_timestamp(argv[1])
             input_todo = ' '.join(argv[2:])
 
-        return (absolute_timestamp, input_todo)
+
+        pattern_parsers = []
+        for pattern_parser in pattern_parsers:
+            if pattern_parser.match(cmdline):
+                return pattern_parser.parse(cmdline)
+
+class PatternParser(object):
+    """
+    abstract interface
+    """
+    def match(self, cmdline):
+        """
+        return: True/False
+        """
+        raise NotImplementedError 
+
+    def parse(self, cmdline):
+        """
+        return (absolute_timestamp, thing)
+        """
+        raise NotImplementedError 
+
+
+class RelativeTimePatternParser(PatternParser):
+
+    def match(self, cmdline):
+        match = re.search(r'\b\d+[md]?\b', cmdline)
+        if match:
+            return True
+        match = re.search(r'\b\d+days?\b', cmdline)
+        if match:
+            return True
+
+    def parse(self, cmdline):
+        # N minutes
+        current_timestamp = time.mktime(time.localtime())
+        match = re.search(r'\b(\d+)m?\b', cmdline)
+        if match:
+            input_num = match.group(1)
+            absolute_timestamp = current_timestamp + int(input_num) * 60
+            thing = remove match.group(0) from cmdline, and then remove space at begin/end
+            return (absolute_timestamp, thing)
+        # N days
+
+
+
+
+
+
+
 
 
 

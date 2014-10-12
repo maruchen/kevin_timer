@@ -77,6 +77,56 @@ class TestInputeParser(unittest.TestCase):
             (due_timestamp, thing) = parser.parse_textline(test_case[0])
             self.assertEqual(test_case[1], (due_timestamp, thing))
 
+
+    def test_absolute_time(self):
+        year = time.localtime().tm_year
+        month = time.localtime().tm_month
+        day = time.localtime().tm_day
+        today_timestamp = time.mktime(time.strptime(year + month + day, "%Y%m%d"))  
+        test_cases = [
+                        (
+                            "2014-11-1 abc",   # 默认是早上8点提醒
+                            (1414800000.0, "abc")
+                        ),
+                        (
+                            "11-1 abc",
+                            (1414800000.0, "abc")
+                        ),
+                        (
+                            "abc 11-1",
+                            (1414800000.0, "abc")
+                        ),
+                        (
+                            "2014-11-1 16:30 中文",   
+                            (1414830600.0, "中文")
+                        ),
+                        (
+                            "11-1 16:30 中文",   
+                            (1414830600.0, "中文")
+                        ),
+                        (
+                            "19:00 中文",   
+                            (today_timestamp+19*60*60, "中文")
+                        ),
+                        (
+                            "19am 中文",   
+                            (today_timestamp+19*60*60, "中文")
+                        ),
+                        (
+                            "7pm 中文",   
+                            (today_timestamp+19*60*60, "中文")
+                        ),
+                        (
+                            "中文 11-1 7pm",   
+                            (1414839600.0, "中文")
+                        ),
+                     ]
+        parser = InputParser()
+        for test_case in test_cases:
+            (due_timestamp, thing) = parser.parse_textline(test_case[0])
+            self.assertEqual(test_case[1], (due_timestamp, thing))
+
+
 if __name__ == '__main__':
 
     unittest.main()

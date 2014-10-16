@@ -78,7 +78,7 @@ class TestInputeParser(unittest.TestCase):
             self.assertEqual(test_case[1], (due_timestamp, thing))
 
 
-    def test_absolute_time(self):
+    def test_absolute_time_with_date(self):
         year = time.localtime().tm_year
         month = time.localtime().tm_month
         day = time.localtime().tm_day
@@ -105,27 +105,68 @@ class TestInputeParser(unittest.TestCase):
                             (1414830600.0, "中文")
                         ),
                         (
-                            "19:00 中文",   
-                            (today_timestamp+19*60*60, "中文")
+                            "中文 11-1 11pm",   
+                            (1414854000.0, "中文")
                         ),
                         (
-                            "19am 中文",   
-                            (today_timestamp+19*60*60, "中文")
+                            "中文 11-1 23am",   
+                            (1414854000.0, "中文")
                         ),
                         (
-                            "7pm 中文",   
-                            (today_timestamp+19*60*60, "中文")
-                        ),
-                        (
-                            "中文 11-1 7pm",   
-                            (1414839600.0, "中文")
-                        ),
+                            "中文 11-1 2am",   
+                            (1414778400.0, "中文")
+                        )
                      ]
         parser = InputParser()
         for test_case in test_cases:
             (due_timestamp, thing) = parser.parse_textline(test_case[0])
             self.assertEqual(test_case[1], (due_timestamp, thing))
 
+    def test_absolute_time_without_date(self):
+        year = time.localtime().tm_year
+        month = time.localtime().tm_month
+        day = time.localtime().tm_day
+        today_timestamp = time.mktime(time.strptime(str(year) + str(month) + str(day), "%Y%m%d"))  
+        tomorrow_timestamp = time.mktime(time.strptime(str(year) + str(month) + str(day + 1), "%Y%m%d"))  
+
+        # 如果现在过了2点，那么指的是第二天的2点，否则指的是今天的2点
+        if time.localtime().tm_hour > 2 or (time.localtime().tm_hour == 2 and time.localtime().tm_minute > 0):
+            timestamp_for_2 = tomorrow_timestamp
+        else:
+            timestamp_for_2 = today_timestamp
+        # 如果现在过了23点，那么指的是第二天的23点，否则指的是今天的23点
+        if time.localtime().tm_hour > 23 or (time.localtime().tm_hour == 23 and time.localtime().tm_minute > 0):
+            timestamp_for_23 = tomorrow_timestamp
+        else:
+            timestamp_for_23 = today_timestamp
+
+
+        test_cases= [
+                        (
+                            "23:00 中文",   
+                            (timestamp_for_23+23*60*60, "中文")
+                        ),
+                        (
+                            "23am 中文",   
+                            (timestamp_for_23+23*60*60, "中文")
+                        ),
+                        (
+                            "11pm 中文",   
+                            (timestamp_for_23+23*60*60, "中文")
+                        ),
+                        (
+                            "2am 中文",   
+                            (timestamp_for_2+2*60*60, "中文")
+                        ),
+                        (
+                            "中文abc 2:00 中文",   
+                            (timestamp_for_2+2*60*60, "中文abc中文")
+                        ),
+                     ]
+        parser = InputParser()
+        for test_case in test_cases:
+            (due_timestamp, thing) = parser.parse_textline(test_case[0])
+            self.assertEqual(test_case[1], (due_timestamp, thing))
 
 if __name__ == '__main__':
 

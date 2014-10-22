@@ -10,6 +10,7 @@ import argparse
 import operator
 import math
 from Tkinter import *
+from store import *
 import threading
 
 POOL_INTERVAL_SECONDS = 60
@@ -17,11 +18,12 @@ WATCH_FILENAME = "D:/watch.txt"
 
 
 class AlertDialog(Frame):
-    def __init__(self, alert_manager, thing, due_time, master=None):
+    def __init__(self, alert_manager, task, master=None):
         Frame.__init__(self, master)
         self.alert_manager = alert_manager
-        self.thing = thing
-        self.due_time = due_time
+        self.task = task
+        self.due_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(task.due_timestamp))
+        self.thing = task.thing
         self._createWidgets()
         self.pack()
 
@@ -55,95 +57,37 @@ class AlertDialog(Frame):
         Frame.quit(self)
 
     def delay5day(self):
-        new_timestamp = time.mktime(time.strptime(self.due_time, "%Y-%m-%d %H:%M:%S")) + 24 * 60 * 60 * 5
-
-        with open(WATCH_FILENAME) as watch_file:
-            lines = watch_file.readlines()
-
-        new_lines = []
-        for line in lines:
-            match = re.match(r'%s\t@ %s\s+' % (self.thing, self.due_time), line)
-            if match:
-                line = '%s\t@ %s (%.1f)\n' % (self.thing, time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(new_timestamp)), new_timestamp)
-            new_lines.append(line)
-
-        with open(WATCH_FILENAME, "w") as watch_file:
-            watch_file.writelines(new_lines)
-
+        self.task.due_timestamp = self.task.due_timestamp + 24 * 60 * 60 * 5
+        store = Store(WATCH_FILENAME)
+        store.update_task(self.task)
         self.quit()
 
     def delay1day(self):
-        new_timestamp = time.mktime(time.strptime(self.due_time, "%Y-%m-%d %H:%M:%S")) + 24 * 60 * 60 * 1
-
-        with open(WATCH_FILENAME) as watch_file:
-            lines = watch_file.readlines()
-
-        new_lines = []
-        for line in lines:
-            match = re.match(r'%s\t@ %s\s+' % (self.thing, self.due_time), line)
-            if match:
-                line = '%s\t@ %s (%.1f)\n' % (self.thing, time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(new_timestamp)), new_timestamp)
-            new_lines.append(line)
-
-        with open(WATCH_FILENAME, "w") as watch_file:
-            watch_file.writelines(new_lines)
-
+        self.task.due_timestamp = self.task.due_timestamp + 24 * 60 * 60 * 1
+        store = Store(WATCH_FILENAME)
+        store.update_task(self.task)
         self.quit()
 
+
     def delay1hour(self):
-        new_timestamp = time.mktime(time.strptime(self.due_time, "%Y-%m-%d %H:%M:%S")) + 60 * 60 * 1
-
-        with open(WATCH_FILENAME) as watch_file:
-            lines = watch_file.readlines()
-
-        new_lines = []
-        for line in lines:
-            match = re.match(r'%s\t@ %s\s+' % (self.thing, self.due_time), line)
-            if match:
-                line = '%s\t@ %s (%.1f)\n' % (self.thing, time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(new_timestamp)), new_timestamp)
-            new_lines.append(line)
-
-        with open(WATCH_FILENAME, "w") as watch_file:
-            watch_file.writelines(new_lines)
-
+        self.task.due_timestamp = self.task.due_timestamp + 60 * 60 * 1
+        store = Store(WATCH_FILENAME)
+        store.update_task(self.task)
         self.quit()
 
 
     def delay10min(self):
-        new_timestamp = time.mktime(time.strptime(self.due_time, "%Y-%m-%d %H:%M:%S")) + 60 * 10
-
-        with open(WATCH_FILENAME) as watch_file:
-            lines = watch_file.readlines()
-
-        new_lines = []
-        for line in lines:
-            match = re.match(r'%s\t@ %s\s+' % (self.thing, self.due_time), line)
-            if match:
-                line = '%s\t@ %s (%.1f)\n' % (self.thing, time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(new_timestamp)), new_timestamp)
-            new_lines.append(line)
-
-        with open(WATCH_FILENAME, "w") as watch_file:
-            watch_file.writelines(new_lines)
-
+        self.task.due_timestamp = self.task.due_timestamp + 60 * 10
+        store = Store(WATCH_FILENAME)
+        store.update_task(self.task)
         self.quit()
+
 
     def done(self):
-        with open(WATCH_FILENAME) as watch_file:
-            lines = watch_file.readlines()
-
-        new_lines = []
-        for line in lines:
-            match = re.match(r'%s\t@ %s\s+' % (self.thing, self.due_time), line)
-            if match:
-                line = line[:len(line)-1] + "@\n"
-            new_lines.append(line)
-
-
-        with open(WATCH_FILENAME, "w") as watch_file:
-            watch_file.writelines(new_lines)
-
+        self.task.done = True
+        store = Store(WATCH_FILENAME)
+        store.update_task(self.task)
         self.quit()
-
 
 
 
@@ -154,19 +98,19 @@ class AlertManager(object):
     def __init__(self):
         self.is_showing = False
 
-    def showAlert(self, thing, due_time):
+    def showAlert(self, task):
         if self.is_showing:
             return
 
         else:
             self.is_showing = True
-            self._showDialog(thing, due_time)
+            self._showDialog(task)
 
-    def _showDialog(self, thing, due_time):
+    def _showDialog(self, task):
         root = Tk()
         root.title = "提醒"
         root.lift()
-        app = AlertDialog(self, thing, due_time, master=root)
+        app = AlertDialog(self, task, master=root)
         #app.master.title('提醒')
         app.mainloop()
         root.destroy()
@@ -175,19 +119,15 @@ class AlertManager(object):
 def check_watch_file():
     #print os.path.abspath(WATCH_FILENAME) 
     alertManager = AlertManager()
+    store = Store(WATCH_FILENAME)
     while True:
-        with open(WATCH_FILENAME) as watch_file:
-            lines = watch_file.readlines()
-        for line in lines:
-            if line[-2:-1] == "@": # finished task
+        all_tasks = store.get_all_tasks()
+        for task in all_tasks:
+            if task.done:
                 continue
-            match = re.match(r'(.*)\t@ (.+)\s+\((\d+\.\d+)\)', line)
-            if match:
-                thing = match.group(1)
-                due_time = match.group(2)
-                timestamp = float(match.group(3))
-                if timestamp <= time.time():
-                    alertManager.showAlert(thing, due_time)
+            if task.due_timestamp <= time.time():
+                alertManager.showAlert(task)
+                #alertManager.showAlert(task.thing,
 
         time.sleep(POOL_INTERVAL_SECONDS)
 

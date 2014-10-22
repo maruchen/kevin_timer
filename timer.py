@@ -9,6 +9,7 @@ import argparse
 import operator
 import math
 from input_parser import *
+from store import *
 
 
 WATCH_FILENAME = "D:/watch.txt"
@@ -46,7 +47,14 @@ if __name__ == "__main__":
     print input_todo + "\t@ " + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(absolute_timestamp)) + " (" + str(absolute_timestamp) + ")"
     logging.debug("parse ok:%s", input_todo + "\t@ " + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(absolute_timestamp)) + " (" + str(absolute_timestamp) + ")")
     time.sleep(1)
-    with open(WATCH_FILENAME, 'a') as watch_file:
-        watch_file.write(input_todo + "\t@ " + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(absolute_timestamp)) + " (" + str(absolute_timestamp) + ")\n")
+
+    #with open(WATCH_FILENAME, 'a') as watch_file:
+    #    watch_file.write(input_todo + "\t@ " + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(absolute_timestamp)) + " (" + str(absolute_timestamp) + ")\n")
+
+    store = Store(WATCH_FILENAME)
+    if input_todo == "":
+        input_todo = "@" 
+    task = Task(None, input_todo, absolute_timestamp, False)
+    store.add_task(task)
 
 

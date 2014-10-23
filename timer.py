@@ -12,7 +12,6 @@ from input_parser import *
 from store import *
 
 
-WATCH_FILENAME = "D:/watch.txt"
 
 
 logging.basicConfig(filename='D:/kevin_timer.log', 
@@ -48,10 +47,8 @@ if __name__ == "__main__":
     logging.debug("parse ok:%s", input_todo + "\t@ " + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(absolute_timestamp)) + " (" + str(absolute_timestamp) + ")")
     time.sleep(1)
 
-    #with open(WATCH_FILENAME, 'a') as watch_file:
-    #    watch_file.write(input_todo + "\t@ " + time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(absolute_timestamp)) + " (" + str(absolute_timestamp) + ")\n")
 
-    store = Store(WATCH_FILENAME)
+    store = Store()
     if input_todo == "":
         input_todo = "@" 
     task = Task(None, input_todo, absolute_timestamp, False)

@@ -14,7 +14,6 @@ from store import *
 import threading
 
 POOL_INTERVAL_SECONDS = 60
-WATCH_FILENAME = "D:/watch.txt"
 
 
 class AlertDialog(Frame):
@@ -58,34 +57,34 @@ class AlertDialog(Frame):
 
     def delay5day(self):
         self.task.due_timestamp = self.task.due_timestamp + 24 * 60 * 60 * 5
-        store = Store(WATCH_FILENAME)
+        store = Store()
         store.update_task(self.task)
         self.quit()
 
     def delay1day(self):
         self.task.due_timestamp = self.task.due_timestamp + 24 * 60 * 60 * 1
-        store = Store(WATCH_FILENAME)
+        store = Store()
         store.update_task(self.task)
         self.quit()
 
 
     def delay1hour(self):
         self.task.due_timestamp = self.task.due_timestamp + 60 * 60 * 1
-        store = Store(WATCH_FILENAME)
+        store = Store()
         store.update_task(self.task)
         self.quit()
 
 
     def delay10min(self):
         self.task.due_timestamp = self.task.due_timestamp + 60 * 10
-        store = Store(WATCH_FILENAME)
+        store = Store()
         store.update_task(self.task)
         self.quit()
 
 
     def done(self):
         self.task.done = True
-        store = Store(WATCH_FILENAME)
+        store = Store()
         store.update_task(self.task)
         self.quit()
 
@@ -117,9 +116,9 @@ class AlertManager(object):
 
 
 def check_watch_file():
-    #print os.path.abspath(WATCH_FILENAME) 
+    #print os.path.abspath() 
     alertManager = AlertManager()
-    store = Store(WATCH_FILENAME)
+    store = Store()
     while True:
         all_tasks = store.get_all_tasks()
         for task in all_tasks:

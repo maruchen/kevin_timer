@@ -27,8 +27,8 @@ class Task(object):
 
 class Store(object):
 
-    def __init__(self, filename):
-        self.watch_filename = filename
+    def __init__(self):
+        self.watch_filename = WATCH_FILENAME
         self.tasks = []
 
     def add_task(self, task):
@@ -61,6 +61,9 @@ class Store(object):
 
     def __load_task(self):
         all_tasks = []
+        if os.path.exists(self.watch_filename) == False:
+            return all_tasks
+
         with open(self.watch_filename) as watch_file:
             lines = watch_file.readlines()
             for line in lines:
